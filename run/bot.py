@@ -1,6 +1,7 @@
 import logging
+import re
 from utils import BroadcastManager, db, asyncio, sanitize_query, DownloadError, os
-from plugins import SpotifyDownloader, ShazamHelper, Insta, YoutubeDownloader
+from plugins import SpotifyDownloader, ShazamHelper, YoutubeDownloader
 from run import events, Button, MessageMediaDocument, update_bot_version_user_season, is_user_in_channel, \
     handle_continue_in_membership_message
 from run import Buttons, BotMessageHandler, BotState, BotCommandHandler, respond_based_on_channel_membership
@@ -15,7 +16,6 @@ class Bot:
             Bot.initialize_spotify_downloader()
             await Bot.initialize_database()
             Bot.initialize_shazam()
-            Bot.initialize_instagram()
             # Bot.initialize_youtube()  # YouTube отключён — см. README «YouTube: как включить обратно»
             Bot.initialize_buttons()
             await Bot.initialize_action_queries()
@@ -47,14 +47,6 @@ class Bot:
             print("Plugins: Shazam initialized.")
         except Exception as e:
             print(f"An error occurred while initializing Shazam helper: {str(e)}")
-
-    @staticmethod
-    def initialize_instagram():
-        try:
-            Insta.initialize()
-            print("Plugins: Instagram initialized.")
-        except Exception as e:
-            print(f"An error occurred while initializing Instagram: {str(e)}")
 
     @staticmethod
     def initialize_youtube():
@@ -541,8 +533,8 @@ class Bot:
             # await Bot.process_youtube_link(event)
         elif SpotifyDownloader.is_spotify_link(event.message.text):
             await Bot.process_spotify_link(event)
-        elif Insta.is_instagram_url(event.message.text):
-            await Insta.download(Bot.Client, event)
+        elif event.message.text and re.search(r'instagram\.com|instagr\.am', event.message.text):
+            await event.respond("Ссылки на Instagram не поддерживаются.")
         elif not event.message.text.startswith('/'):
             await Bot.process_text_query(event)
 

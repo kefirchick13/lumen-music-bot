@@ -14,8 +14,7 @@ class BotMessageHandler:
         #         "I can:\n"
         #         "- Search by text or Spotify link\n"
         #         "- Search by voice message (Shazam)\n"
-        #         "- Download from YouTube\n"
-        #         "- Download from Instagram\n\n"
+        #         "- Download from YouTube\n\n"
         #         "Send me a song name, artist, link or a voice message — I will find the track and help you download music or video. 🎶\n\n"
         #         "To see what I can do, type: /help\n"
         #         'Or simply tap the "Instructions" button below. 👇'
@@ -26,8 +25,7 @@ class BotMessageHandler:
         #         "Я умею:\n"
         #         "- Искать треки по тексту или ссылке Spotify\n"
         #         "- Искать музыку по голосовому сообщению (Shazam)\n"
-        #         "- Скачивать видео/аудио с YouTube\n"
-        #         "- Скачивать медиа из Instagram\n\n"
+        #         "- Скачивать видео/аудио с YouTube\n\n"
         #         "Отправь мне название песни, исполнителя, ссылку или голосовое сообщение — я найду трек и помогу скачать музыку или видео. 🎶\n\n"
         #         "Чтобы узнать подробнее, введи команду: /help\n"
         #         "Или просто нажми кнопку «Инструкция» ниже. 👇"
@@ -38,7 +36,7 @@ class BotMessageHandler:
                 "I can:\n"
                 "- Search by text or Spotify link\n"
                 "- Search by voice message (Shazam)\n"
-                "- Download from Instagram\n\n"
+                "- Download from YouTube — coming soon 🎬\n\n"
                 "Send me a song name, artist, link or a voice message — I will find the track and help you download music. 🎶\n\n"
                 "To see what I can do, type: /help\n"
                 'Or simply tap the "Instructions" button below. 👇'
@@ -49,7 +47,7 @@ class BotMessageHandler:
                 "Я умею:\n"
                 "- Искать треки по тексту или ссылке Spotify\n"
                 "- Искать музыку по голосовому сообщению (Shazam)\n"
-                "- Скачивать медиа из Instagram\n\n"
+                "- Скачивание с YouTube — скоро появится 🎬\n\n"
                 "Отправь мне название песни, исполнителя, ссылку или голосовое сообщение — я найду трек и помогу скачать музыку. 🎶\n\n"
                 "Чтобы узнать подробнее, введи команду: /help\n"
                 "Или просто нажми кнопку «Инструкция» ниже. 👇"
@@ -57,7 +55,6 @@ class BotMessageHandler:
 
     @staticmethod
     def get_instruction_message(language: str) -> str:
-        # YouTube отключён — инструкция без раздела «📺 YouTube download» / «📺 Загрузка с YouTube». Чтобы вернуть: добавить между «💡 Tip» и «📸 Instagram» блок про YouTube (см. README «YouTube: как включить обратно», п.5).
         if language == "en":
             return (
                 "🎧 Deystweare Music Bot — what it can do 🎧\n\n"
@@ -69,10 +66,6 @@ class BotMessageHandler:
                 "   the bot will try to recognize it via Shazam and suggest tracks 🎤🔍📩\n"
                 "5. You can request lyrics, artist info and more 📜👨‍🎤\n\n"
                 "💡 Tip: you can search by title, part of lyrics or artist name.\n\n"
-                "📸 Instagram download:\n"
-                "1. Send a post / Reels / IGTV link 🔗\n"
-                "2. Wait for processing ⏳\n"
-                "3. Get the media file 📤\n\n"
                 "If you have any questions about the bot, contact your admin/owner."
             )
         else:
@@ -86,10 +79,6 @@ class BotMessageHandler:
                 "   бот попробует распознать её через Shazam и предложит треки 🎤🔍📩\n"
                 "5. Можно запросить текст песни, информацию об исполнителе и другое 📜👨‍🎤\n\n"
                 "💡 Подсказка: можно искать по названию, части текста или имени исполнителя.\n\n"
-                "📸 Загрузка с Instagram:\n"
-                "1. Отправь ссылку на пост / Reels / IGTV 🔗\n"
-                "2. Дождись обработки ⏳\n"
-                "3. Получи медиа‑файл 📤\n\n"
                 "Возникли вопросы по боту? Напиши своему админу/владельцу бота."
             )
 
