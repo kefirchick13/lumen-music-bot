@@ -118,6 +118,7 @@ class YoutubeDownloader:
                     return True
             return False
 
+        # Всегда показываем минимум два варианта: хорошее (720/1080) и среднее (480) качество, независимо от размера
         video_buttons = []
         for target in (1080, 720, 480):
             fmt = _pick_progressive_by_height(target)
@@ -126,11 +127,11 @@ class YoutubeDownloader:
                 height = fmt.get('height')
                 width = fmt.get('width')
                 size_mb = _filesize_mb(fmt)
-                if extension and fmt.get('format_id') and height and size_mb is not None:
+                if extension and fmt.get('format_id') and height:
                     label = f"{extension} - {height}p" if not width else f"{extension} - {width}x{height}"
-                    filesize = f"{size_mb:.2f} MB"
-                    button_data = f"yt/dl/{video_id}/{extension}/{fmt['format_id']}/{filesize}"
-                    button = [Button.inline(f"{label} - {filesize}", data=button_data)]
+                    filesize_str = f"{size_mb:.2f} MB" if size_mb is not None else "?"
+                    button_data = f"yt/dl/{video_id}/{extension}/{fmt['format_id']}/{filesize_str}"
+                    button = [Button.inline(f"{label} - {filesize_str}", data=button_data)]
                     if button not in video_buttons:
                         video_buttons.append(button)
                 continue
@@ -199,15 +200,6 @@ class YoutubeDownloader:
             format_id = parts[-2]
             filesize_str = parts[-1].replace("MB", "").strip()
             video_id = parts[2]
-
-            if filesize_str != "?":
-                try:
-                    if float(filesize_str) > YoutubeDownloader.MAXIMUM_DOWNLOAD_SIZE_MB:
-                        return await event.answer(
-                            f"⚠️ The file size is more than {YoutubeDownloader.MAXIMUM_DOWNLOAD_SIZE_MB}MB."
-                            , alert=True)
-                except ValueError:
-                    pass
 
             await db.set_file_processing_flag(user_id, is_processing=True)
 
