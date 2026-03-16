@@ -527,6 +527,18 @@ class SpotifyDownloader:
         upload_path = file_path
         temp_path = None
         if not playlist and os.path.isfile(file_path):
+            # Ждём стабилизации размера (файл мог ещё дописываться после префетча/скачивания)
+            for _ in range(3):
+                try:
+                    size = os.path.getsize(file_path)
+                except OSError:
+                    break
+                await asyncio.sleep(1)
+                try:
+                    if os.path.getsize(file_path) == size:
+                        break
+                except OSError:
+                    break
             try:
                 fd, temp_path = tempfile.mkstemp(suffix=".mp3", prefix="upload_")
                 os.close(fd)

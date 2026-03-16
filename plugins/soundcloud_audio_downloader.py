@@ -44,6 +44,8 @@ class SoundCloudAudioDownloader:
                 "prefer_ffmpeg": True,
                 "ffmpeg_location": _ffmpeg_location(),
                 "geo_bypass": True,
+                # Отсекаем короткие превью: только треки от 40 сек или с неизвестной длиной
+                "match_filter": "duration>=?40",
                 "postprocessors": [{'key': 'FFmpegExtractAudio', 'preferredcodec': music_quality['format'],
                                     'preferredquality': music_quality['quality']}]
             }
