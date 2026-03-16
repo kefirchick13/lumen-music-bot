@@ -414,11 +414,6 @@ class Bot:
             await event.answer("⚠️ Not available.")
 
     @staticmethod
-    async def process_x_or_twitter_link(event):
-        # Функциональность работы с Twitter/X отключена.
-        return
-
-    @staticmethod
     async def process_youtube_link(event):
         if not await Bot.process_bot_interaction(event):
             return
@@ -512,8 +507,6 @@ class Bot:
             await Bot.process_youtube_link(event)
         elif SpotifyDownloader.is_spotify_link(event.message.text):
             await Bot.process_spotify_link(event)
-        elif X.contains_x_or_twitter_link(event.message.text):
-            await Bot.process_x_or_twitter_link(event)
         elif Insta.is_instagram_url(event.message.text):
             await Insta.download(Bot.Client, event)
         elif not event.message.text.startswith('/'):
