@@ -1,0 +1,33 @@
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Build / install
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+*.manifest
+
+# Local env / secrets
+config.env
+.env
+
+# Telethon / sessions / local state
+*.session
+*.session-journal
+*.db
+
+# Local caches / downloads
+.cache
+repository/
+
+# Virtualenv
+venv*/
+.venv/
+
+# OS / editor
+.DS_Store
+.idea/
+*.log
