@@ -11,6 +11,14 @@ def _ffmpeg_location():
     return "/usr/bin"
 
 
+def _match_min_duration(info, *, incomplete=False):
+    """Отсекаем короткие превью: только треки от 40 сек или с неизвестной длиной."""
+    duration = info.get("duration")
+    if duration is not None and duration < 40:
+        return "Duration too short"
+    return None
+
+
 class SoundCloudAudioDownloader:
     @staticmethod
     async def download(event, file_info, music_quality, download_directory: str,
@@ -44,8 +52,7 @@ class SoundCloudAudioDownloader:
                 "prefer_ffmpeg": True,
                 "ffmpeg_location": _ffmpeg_location(),
                 "geo_bypass": True,
-                # Отсекаем короткие превью: только треки от 40 сек или с неизвестной длиной
-                "match_filter": "duration>=?40",
+                "match_filter": _match_min_duration,
                 "postprocessors": [{'key': 'FFmpegExtractAudio', 'preferredcodec': music_quality['format'],
                                     'preferredquality': music_quality['quality']}]
             }
