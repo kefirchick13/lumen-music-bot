@@ -1,4 +1,4 @@
-from utils import BroadcastManager, db, asyncio, sanitize_query
+from utils import BroadcastManager, db, asyncio, sanitize_query, DownloadError
 from plugins import SpotifyDownloader, ShazamHelper, Insta, YoutubeDownloader
 from run import events, Button, MessageMediaDocument, update_bot_version_user_season, is_user_in_channel, \
     handle_continue_in_membership_message
@@ -422,9 +422,20 @@ class Bot:
 
         youtube_link = YoutubeDownloader.extract_youtube_url(event.message.text)
         if not youtube_link:
+            await waiting_message.delete()
             return await event.respond("Sorry, Bad Youtube Link.")
-        await YoutubeDownloader.send_youtube_info(Bot.Client, event, youtube_link)
-        await waiting_message.delete()
+        try:
+            await YoutubeDownloader.send_youtube_info(Bot.Client, event, youtube_link)
+            await waiting_message.delete()
+        except DownloadError as e:
+            await waiting_message.delete()
+            err_msg = str(e)
+            if 'bot' in err_msg.lower() or 'cookies' in err_msg.lower():
+                await event.respond(
+                    "YouTube временно блокирует запросы. На сервере можно включить поддержку cookies (переменная YTDL_COOKIES_PATH).\n\nОшибка: " + err_msg[:400]
+                )
+            else:
+                await event.respond("Ошибка при получении видео с YouTube:\n" + err_msg[:400])
 
     @staticmethod
     async def handle_unavailable_feature(event):

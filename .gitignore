@@ -13,6 +13,8 @@ dist/
 # Local env / secrets
 config.env
 .env
+cookies.txt
+*.cookies.txt
 
 # Telethon / sessions / local state
 *.session

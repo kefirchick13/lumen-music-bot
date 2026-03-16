@@ -1,18 +1,40 @@
+import json
+import tempfile
 from utils import YoutubeDL, re, lru_cache, hashlib, InputMediaPhotoExternal, db
 from utils import os, InputMediaUploadedDocument, DocumentAttributeVideo, fast_upload
 from utils import DocumentAttributeAudio, DownloadError, WebpageMediaEmptyError
 from run import Button, Buttons
 
 
+def _ydl_cookies_opts():
+    """Куки только из env YTDL_COOKIES (Netscape-текст), пишем во временный файл при старте."""
+    path = getattr(YoutubeDownloader, '_cookies_file_path', None)
+    if path and os.path.isfile(path):
+        return {'cookiefile': path}
+    return {}
+
+
 class YoutubeDownloader:
 
     @classmethod
     def initialize(cls):
-        cls.MAXIMUM_DOWNLOAD_SIZE_MB = 100
         cls.DOWNLOAD_DIR = 'repository/Youtube'
+        cls._cookies_file_path = None
 
         if not os.path.isdir(cls.DOWNLOAD_DIR):
             os.mkdir(cls.DOWNLOAD_DIR)
+
+        # Куки только из env YTDL_COOKIES — весь текст в формате Netscape, вставляешь как есть
+        raw = os.environ.get('YTDL_COOKIES', '').strip()
+        if raw:
+            raw = raw.replace('\\n', '\n')
+            try:
+                tmp = tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False, encoding='utf-8')
+                tmp.write(raw)
+                tmp.close()
+                cls._cookies_file_path = tmp.name
+            except Exception:
+                cls._cookies_file_path = None
 
     @lru_cache(maxsize=128)  # Cache the last 128 screenshots
     def get_file_path(url, format_id, extension):
@@ -66,6 +88,7 @@ class YoutubeDownloader:
             'listformats': True,
             'no_warnings': True,
             'quiet': True,
+            **_ydl_cookies_opts(),
         }
 
         with YoutubeDL(ydl_opts) as ydl:
@@ -83,14 +106,12 @@ class YoutubeDownloader:
         formats = YoutubeDownloader._get_formats(url)
 
         # Download the video thumbnail
-        with YoutubeDL({'quiet': True}) as ydl:
+        with YoutubeDL({'quiet': True, **_ydl_cookies_opts()}) as ydl:
             info = ydl.extract_info(url, download=False)
-            thumbnail_url = info['thumbnail']
+            thumbnail_url = info['thumbnail']   
 
-        # Create buttons for selected formats:
-        # 1080p / 720p / 480p (merge: bestvideo+bestaudio when no progressive) + 2 best audio-only.
+        # Разбираем форматы: видео с аудио и только аудио
         video_formats = [f for f in formats if f.get('vcodec') != 'none' and f.get('acodec') != 'none']
-        video_only_formats = [f for f in formats if f.get('vcodec') != 'none' and f.get('acodec') == 'none']
         audio_formats = [f for f in formats if f.get('acodec') != 'none' and f.get('vcodec') == 'none']
 
         def _filesize_mb(fmt):
@@ -99,48 +120,46 @@ class YoutubeDownloader:
                 return None
             return size / 1024 / 1024
 
-        def _pick_progressive_by_height(target_height: int):
-            candidates = []
-            for fmt in video_formats:
-                height = fmt.get('height')
-                if not height:
-                    continue
-                candidates.append((abs(height - target_height), -height, fmt))
-            if not candidates:
-                return None
-            candidates.sort()
-            return candidates[0][2]
-
-        def _has_height_at_least(target_height: int):
-            for fmt in video_formats + video_only_formats:
-                h = fmt.get('height')
-                if h is not None and h >= target_height:
-                    return True
-            return False
-
-        # Всегда показываем минимум два варианта: хорошее (720/1080) и среднее (480) качество, независимо от размера
+        # Видео:
+        # - если у форматов есть известный размер — показываем КАЖДЫЙ такой формат отдельной кнопкой
+        # - если размеров нет — одна кнопка «лучшее качество» по максимальной высоте
         video_buttons = []
-        for target in (1080, 720, 480):
-            fmt = _pick_progressive_by_height(target)
-            if fmt:
+        video_with_size = [f for f in video_formats if _filesize_mb(f) is not None]
+
+        if video_with_size:
+            # Показать все форматы с известным размером
+            for fmt in sorted(
+                video_with_size,
+                key=lambda f: (f.get('height') or 0, _filesize_mb(f) or 0),
+                reverse=True,
+            ):
                 extension = fmt.get('ext')
                 height = fmt.get('height')
                 width = fmt.get('width')
                 size_mb = _filesize_mb(fmt)
-                if extension and fmt.get('format_id') and height:
-                    label = f"{extension} - {height}p" if not width else f"{extension} - {width}x{height}"
-                    filesize_str = f"{size_mb:.2f} MB" if size_mb is not None else "?"
-                    button_data = f"yt/dl/{video_id}/{extension}/{fmt['format_id']}/{filesize_str}"
-                    button = [Button.inline(f"{label} - {filesize_str}", data=button_data)]
-                    if button not in video_buttons:
-                        video_buttons.append(button)
-                continue
-            if _has_height_at_least(target):
-                filesize_placeholder = "?"
-                button_data = f"yt/dl/{video_id}/mp4/merge_{target}/{filesize_placeholder}"
-                button = [Button.inline(f"mp4 - {target}p - best quality", data=button_data)]
+                if not extension or not fmt.get('format_id'):
+                    continue
+                label = f"{extension} - {height}p" if height and not width else \
+                    (f"{extension} - {width}x{height}" if height and width else extension)
+                filesize_str = f"{size_mb:.2f} MB"
+                button_data = f"yt/dl/{video_id}/{extension}/{fmt['format_id']}/{filesize_str}"
+                button = [Button.inline(f"{label} - {filesize_str}", data=button_data)]
                 if button not in video_buttons:
                     video_buttons.append(button)
+        else:
+            # Нет размеров — одна кнопка «лучшее качество»
+            if video_formats:
+                best_fmt = max(
+                    video_formats,
+                    key=lambda f: (f.get('height') or 0, _filesize_mb(f) or 0),
+                )
+                extension = best_fmt.get('ext') or 'mp4'
+                height = best_fmt.get('height')
+                size_mb = _filesize_mb(best_fmt)
+                filesize_str = f"{size_mb:.2f} MB" if size_mb is not None else "?"
+                label = "best video" if not height else f"{extension} - {height}p (best)"
+                button_data = f"yt/dl/{video_id}/{extension}/{best_fmt['format_id']}/{filesize_str}"
+                video_buttons.append([Button.inline(f"{label} - {filesize_str}", data=button_data)])
 
         # Pick 2 best audio-only formats by abr
         audio_buttons = []
@@ -227,6 +246,7 @@ class YoutubeDownloader:
                     'format': format_spec,
                     'outtmpl': path,
                     'quiet': True,
+                    **_ydl_cookies_opts(),
                 }
                 if is_merge:
                     ydl_opts['merge_output_format'] = 'mp4'
@@ -250,6 +270,7 @@ class YoutubeDownloader:
                     'format': format_spec,
                     'outtmpl': path,
                     'quiet': True,
+                    **_ydl_cookies_opts(),
                 }
                 if is_merge:
                     ydl_opts['merge_output_format'] = 'mp4'
