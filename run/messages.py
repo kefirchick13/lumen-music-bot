@@ -7,15 +7,39 @@ from telethon.errors.rpcerrorlist import MessageNotModifiedError
 class BotMessageHandler:
     @staticmethod
     def get_start_message(language: str) -> str:
+        # YouTube отключён — приветствие без YouTube. Чтобы вернуть с YouTube: раскомментировать блок ниже и закомментировать текущий return.
+        # if language == "en":
+        #     return (
+        #         "Welcome to **Deystweare Music Bot** 🎧\n\n"
+        #         "I can:\n"
+        #         "- Search by text or Spotify link\n"
+        #         "- Search by voice message (Shazam)\n"
+        #         "- Download from YouTube\n"
+        #         "- Download from Instagram\n\n"
+        #         "Send me a song name, artist, link or a voice message — I will find the track and help you download music or video. 🎶\n\n"
+        #         "To see what I can do, type: /help\n"
+        #         'Or simply tap the "Instructions" button below. 👇'
+        #     )
+        # else:
+        #     return (
+        #         "Добро пожаловать в **Deystweare Music Bot** 🎧\n\n"
+        #         "Я умею:\n"
+        #         "- Искать треки по тексту или ссылке Spotify\n"
+        #         "- Искать музыку по голосовому сообщению (Shazam)\n"
+        #         "- Скачивать видео/аудио с YouTube\n"
+        #         "- Скачивать медиа из Instagram\n\n"
+        #         "Отправь мне название песни, исполнителя, ссылку или голосовое сообщение — я найду трек и помогу скачать музыку или видео. 🎶\n\n"
+        #         "Чтобы узнать подробнее, введи команду: /help\n"
+        #         "Или просто нажми кнопку «Инструкция» ниже. 👇"
+        #     )
         if language == "en":
             return (
                 "Welcome to **Deystweare Music Bot** 🎧\n\n"
                 "I can:\n"
                 "- Search by text or Spotify link\n"
                 "- Search by voice message (Shazam)\n"
-                "- Download from YouTube\n"
                 "- Download from Instagram\n\n"
-                "Send me a song name, artist, link or a voice message — I will find the track and help you download music or video. 🎶\n\n"
+                "Send me a song name, artist, link or a voice message — I will find the track and help you download music. 🎶\n\n"
                 "To see what I can do, type: /help\n"
                 'Or simply tap the "Instructions" button below. 👇'
             )
@@ -25,15 +49,15 @@ class BotMessageHandler:
                 "Я умею:\n"
                 "- Искать треки по тексту или ссылке Spotify\n"
                 "- Искать музыку по голосовому сообщению (Shazam)\n"
-                "- Скачивать видео/аудио с YouTube\n"
                 "- Скачивать медиа из Instagram\n\n"
-                "Отправь мне название песни, исполнителя, ссылку или голосовое сообщение — я найду трек и помогу скачать музыку или видео. 🎶\n\n"
+                "Отправь мне название песни, исполнителя, ссылку или голосовое сообщение — я найду трек и помогу скачать музыку. 🎶\n\n"
                 "Чтобы узнать подробнее, введи команду: /help\n"
                 "Или просто нажми кнопку «Инструкция» ниже. 👇"
             )
 
     @staticmethod
     def get_instruction_message(language: str) -> str:
+        # YouTube отключён — инструкция без раздела «📺 YouTube download» / «📺 Загрузка с YouTube». Чтобы вернуть: добавить между «💡 Tip» и «📸 Instagram» блок про YouTube (см. README «YouTube: как включить обратно», п.5).
         if language == "en":
             return (
                 "🎧 Deystweare Music Bot — what it can do 🎧\n\n"
@@ -45,11 +69,6 @@ class BotMessageHandler:
                 "   the bot will try to recognize it via Shazam and suggest tracks 🎤🔍📩\n"
                 "5. You can request lyrics, artist info and more 📜👨‍🎤\n\n"
                 "💡 Tip: you can search by title, part of lyrics or artist name.\n\n"
-                "📺 YouTube download:\n"
-                "1. Send a YouTube video link 🔗\n"
-                "2. Choose quality if needed 🎥\n"
-                "3. Wait until download finishes ⏳\n"
-                "4. Get a video or audio file 📤\n\n"
                 "📸 Instagram download:\n"
                 "1. Send a post / Reels / IGTV link 🔗\n"
                 "2. Wait for processing ⏳\n"
@@ -67,11 +86,6 @@ class BotMessageHandler:
                 "   бот попробует распознать её через Shazam и предложит треки 🎤🔍📩\n"
                 "5. Можно запросить текст песни, информацию об исполнителе и другое 📜👨‍🎤\n\n"
                 "💡 Подсказка: можно искать по названию, части текста или имени исполнителя.\n\n"
-                "📺 Загрузка с YouTube:\n"
-                "1. Отправь ссылку на видео YouTube 🔗\n"
-                "2. При необходимости выбери качество 🎥\n"
-                "3. Дождись завершения загрузки ⏳\n"
-                "4. Получи видео или аудио‑файл 📤\n\n"
                 "📸 Загрузка с Instagram:\n"
                 "1. Отправь ссылку на пост / Reels / IGTV 🔗\n"
                 "2. Дождись обработки ⏳\n"
