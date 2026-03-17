@@ -518,7 +518,8 @@ class SpotifyDownloader:
         file_path = file_info['file_path']
         icon_path = file_info['icon_path']
         caption = (
-            f"🎵 **{spotify_link_info['track_name']}** — **{spotify_link_info['artist_name']}**"
+            f"🎵 **{spotify_link_info['track_name']}** — **{spotify_link_info['artist_name']}**\n"
+            "@deystweare_music_bot"
         )
 
         # Для одного трека пробуем отправить из кэша (мгновенно, без повторной загрузки)
@@ -579,18 +580,21 @@ class SpotifyDownloader:
             uploaded_file = await event.client.upload_file(uploaded_file if not playlist else upload_path)
             uploaded_thumbnail = await event.client.upload_file(icon_path)
 
+            duration_sec = int(spotify_link_info.get('duration_ms', 0) / 1000)
             audio_attributes = DocumentAttributeAudio(
-                duration=0,
+                duration=duration_sec,
                 title=f"{spotify_link_info['track_name']} - {spotify_link_info['artist_name']}",
                 performer="@deystweare_music_bot",
                 waveform=None,
                 voice=False
             )
 
+            file_name = file_info.get('file_name', '') or ''
+            mime_type = 'audio/flac' if file_name.lower().endswith('.flac') else 'audio/mpeg'
             media = InputMediaUploadedDocument(
                 file=uploaded_file,
                 thumb=uploaded_thumbnail,
-                mime_type='audio/mpeg',
+                mime_type=mime_type,
                 attributes=[audio_attributes],
             )
 
