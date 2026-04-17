@@ -103,10 +103,25 @@ class SpotifyDownloader:
             except OSError:
                 pass
 
+    # Ссылка может быть не с начала сообщения (префикс, перенос) или с music.open.spotify.com
+    _SPOTIFY_URL_IN_TEXT = re.compile(
+        r'https?://(?:www\.|music\.)?open\.spotify\.com/[^\s<>"\]]+|https?://spotify\.link/[^\s<>"\]]+',
+        re.I,
+    )
+
+    @staticmethod
+    def extract_spotify_url_from_text(text):
+        """Первый URL open.spotify.com / music.open.spotify.com / spotify.link в строке или None."""
+        if not text or not isinstance(text, str):
+            return None
+        m = SpotifyDownloader._SPOTIFY_URL_IN_TEXT.search(text.strip())
+        if not m:
+            return None
+        return m.group(0).rstrip(".,);]>\"'")
+
     @staticmethod
     def is_spotify_link(url):
-        pattern = r'https?://open\.spotify\.com/.*'
-        return re.match(pattern, url) is not None
+        return SpotifyDownloader.extract_spotify_url_from_text(url or "") is not None
 
     @staticmethod
     def identify_spotify_link_type(spotify_url) -> str:
@@ -290,7 +305,8 @@ class SpotifyDownloader:
             query_data = str(event.data)
             spotify_link = query_data.split("/")[-1][:-1]
         else:
-            spotify_link = str(event.message.text)
+            raw = str(event.message.text or "")
+            spotify_link = SpotifyDownloader.extract_spotify_url_from_text(raw) or raw.strip()
 
         # Ensure the user's data is up-to-date
         if not await db.get_user_updated_flag(user_id):

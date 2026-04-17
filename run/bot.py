@@ -597,11 +597,11 @@ class Bot:
             # YouTube отключён — показываем предупреждение вместо обработки (см. README)
             await event.respond("Неверная ссылка. Поддержка YouTube временно отключена.")
             # await Bot.process_youtube_link(event)
-        elif SpotifyDownloader.is_spotify_link(event.message.text):
+        elif SpotifyDownloader.is_spotify_link(event.message.text or ""):
             await Bot.process_spotify_link(event)
         elif event.message.text and re.search(r'instagram\.com|instagr\.am', event.message.text):
             await event.respond("Ссылки на Instagram не поддерживаются.")
-        elif not event.message.text.startswith('/'):
+        elif not (event.message.text or "").strip().startswith('/'):
             await Bot.process_text_query(event)
 
     @staticmethod
