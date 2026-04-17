@@ -4,9 +4,10 @@ from telethon.tl.functions.channels import GetParticipantsRequest
 from telethon.tl.types import ChannelParticipantsSearch, MessageMediaDocument
 from telethon.errors import ChatAdminRequiredError
 from telethon.errors.rpcerrorlist import MessageNotModifiedError
+# Сначала BotState: load_dotenv('config.env'), чтобы os.getenv в buttons видел переменные.
+from .glob_variables import BotState
 from .buttons import Buttons
 from .messages import BotMessageHandler
-from .glob_variables import BotState
 from .commands import BotCommandHandler
 from .version_checker import update_bot_version_user_season
 from .channel_checker import is_user_in_channel, handle_continue_in_membership_message, \

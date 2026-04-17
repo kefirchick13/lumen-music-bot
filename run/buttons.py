@@ -1,10 +1,18 @@
+import os
+
 from run import Button
+
+
+def _owner_contact_url() -> str:
+    """Ссылка на владельца (Telegram t.me/...). Задаётся в BOT_OWNER_CONTACT_URL."""
+    url = (os.getenv("BOT_OWNER_CONTACT_URL") or "").strip()
+    return url or "https://t.me/lanify_rn"
 
 
 class Buttons:
     main_menu_buttons = [
         [Button.inline("Инструкция", b"instructions"), Button.inline("Настройки", b"setting")],
-        [Button.url("Связаться с владельцем", url="https://t.me/saintCityLover")],
+        [Button.url("Связаться с владельцем", url=_owner_contact_url())],
     ]
 
     back_button = Button.inline("<< В главное меню", b"back")
@@ -138,15 +146,16 @@ class Buttons:
 
     @staticmethod
     def get_main_menu_buttons(language: str):
+        owner_url = _owner_contact_url()
         if language == "en":
             return [
                 [Button.inline("Instructions", b"instructions"), Button.inline("Settings", b"setting")],
-                [Button.url("Contact owner", url="https://t.me/saintCityLover")],
+                [Button.url("Contact owner", url=owner_url)],
             ]
         else:
             return [
                 [Button.inline("Инструкция", b"instructions"), Button.inline("Настройки", b"setting")],
-                [Button.url("Связаться с владельцем", url="https://t.me/saintCityLover")],
+                [Button.url("Связаться с владельцем", url=owner_url)],
             ]
 
     @staticmethod
