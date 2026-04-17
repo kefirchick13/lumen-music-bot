@@ -1,3 +1,5 @@
+import re
+
 from .glob_variables import BotState
 from run import GetParticipantsRequest, ChannelParticipantsSearch, ChatAdminRequiredError, Button
 from .buttons import Buttons
@@ -35,11 +37,25 @@ async def is_user_in_channel(user_id, channel_usernames=None):
     return channels_user_is_not_in
 
 
+def _channel_join_url(channel_username: str) -> str:
+    """Нормализация в https://t.me/... для Button.url (иначе ButtonUrlInvalidError)."""
+    s = (channel_username or "").strip()
+    if not s:
+        return "https://t.me/"
+    if s.startswith("@"):
+        s = s[1:]
+    if re.match(r"(?i)^https?://", s):
+        return s
+    if re.match(r"(?i)^(t\.me|telegram\.me)/", s):
+        return f"https://{s}"
+    return f"https://t.me/{s.lstrip('/')}"
+
+
 def join_channel_button(channel_username):
     """
     Кнопка-подписка на указанный канал.
     """
-    return Button.url("Подписаться", f"https://t.me/{channel_username}")
+    return Button.url("Подписаться", _channel_join_url(channel_username))
 
 
 async def respond_based_on_channel_membership(event, message_if_in_channels: str = None, buttons: str = None,

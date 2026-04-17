@@ -1,12 +1,44 @@
 import os
+import re
 
 from run import Button
 
+# Для Button.url Telegram принимает только валидные http(s) URL; иначе — ButtonUrlInvalidError.
+_DEFAULT_OWNER_URL = "https://t.me/lanify_rn"
+
 
 def _owner_contact_url() -> str:
-    """Ссылка на владельца (Telegram t.me/...). Задаётся в BOT_OWNER_CONTACT_URL."""
-    url = (os.getenv("BOT_OWNER_CONTACT_URL") or "").strip()
-    return url or "https://t.me/lanify_rn"
+    """
+    Ссылка для кнопки «Связаться с владельцем».
+    BOT_OWNER_CONTACT_URL: https://t.me/..., t.me/..., @username или просто username.
+    Не используйте tg:// — для url-кнопок это обычно невалидно.
+    """
+    raw = (os.getenv("BOT_OWNER_CONTACT_URL") or "").strip().strip('"').strip("'")
+    if not raw:
+        return _DEFAULT_OWNER_URL
+
+    url = raw.split()[0]
+
+    if url.lower().startswith("tg:"):
+        return _DEFAULT_OWNER_URL
+
+    if url.startswith("@"):
+        handle = url[1:].strip("/").split("/")[0].split("?")[0]
+        return f"https://t.me/{handle}" if handle else _DEFAULT_OWNER_URL
+
+    if url.startswith("//"):
+        return f"https:{url}"
+
+    if re.match(r"(?i)^https?://", url):
+        return url
+
+    if re.match(r"(?i)^(t\.me|telegram\.me)/", url):
+        return f"https://{url}"
+
+    if re.match(r"^[A-Za-z0-9_]+$", url):
+        return f"https://t.me/{url}"
+
+    return _DEFAULT_OWNER_URL
 
 
 class Buttons:
